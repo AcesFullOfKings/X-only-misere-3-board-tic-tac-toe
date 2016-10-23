@@ -91,7 +91,7 @@ class Bot(Player):
             if b[0][0] == "O": #if board is dead return 1
                 return ""
          
-            boards = {
+            boards = { #only includes in-play positions (not boards with three-in-a-row)
             "000000000" : "c",
             "100000000" : "",
             "010000000" : "",
@@ -230,11 +230,13 @@ class Bot(Player):
         
 
 player_1 = Human()
-player_2 = Bot("The Second Computer")
+player_2 = Bot("The Computer")
+
 
 while True:
     #new game
-    turn_player = choice(player_1, player_2) # so play starts with player_1
+    game_over = False
+    turn_player = choice([player_1, player_2])
     b = Board()
     while not game_over:
         if turn_player == player_2:
@@ -260,3 +262,4 @@ while True:
                     winner = player_2.name
                 print(winner + " wins!")
                 game_over = True
+                input("Press a key to start a new game.")
