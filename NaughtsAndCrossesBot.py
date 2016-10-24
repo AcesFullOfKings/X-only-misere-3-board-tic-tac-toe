@@ -73,6 +73,7 @@ class Human(Player):
                 c = int(input("Column: ")) - 1
                 board.move("X", b, r, c)
                 move = (b,r,c)
+                print("")
                 return move
             except IndexError:
                 print("Value must be between 1 and 3!")
@@ -228,38 +229,48 @@ class Bot(Player):
         else: 
             return choice(avail_moves)
         
-
 player_1 = Human()
 player_2 = Bot("The Computer")
 
-
-while True:
+#wins = {player_1.name: 0, player_2.name: 0}
+#t = time.time()
+for i in range(43000):
     #new game
     game_over = False
     turn_player = choice([player_1, player_2])
+    print("\n" + turn_player.name + " moves first - begin!\n\n")
     b = Board()
+    b.show()
     while not game_over:
-        if turn_player == player_2:
-            turn_player = player_1
-        else:
-            turn_player = player_2
-        print("It's " + turn_player.name + "'s turn!")
-        b.show()
-        move = turn_player.make_move(deepcopy(b))
+        print("It's " + turn_player.name + "'s turn!\n")
         
+        move = turn_player.make_move(deepcopy(b))
         board, row, col = move
         b.move("X", board, row, col)
+        b.show()
 
         if b.is_win(board):
-            b.show()
-            print("\nBoard " + str(board+1) + " is dead!")
+            print("\nBoard " + str(board+1) + " is dead!\n")
             b.kill_board(board) #only passes the board number as an integer, not the actual board
-            if b.is_game_over():
-                b.show()
-                if turn_player == player_2:
-                    winner = player_1.name
-                else:
-                    winner = player_2.name
-                print(winner + " wins!")
-                game_over = True
-                input("Press a key to start a new game.")
+            b.show()
+        if b.is_game_over():
+            b.show()
+            if turn_player == player_2:
+                winner = player_1.name
+            else:
+                winner = player_2.name
+            print("*"*(len(winner) + 6))
+            print(winner + " wins!")
+            print("*"*(len(winner) + 6)+"\n\n")
+            game_over = True
+            #wins[winner] += 1
+            input("Press enter to start a new game.")
+        else:
+            if turn_player == player_2:
+                turn_player = player_1
+            else:
+                turn_player = player_2
+print(player_1.name + " won " + str(wins[player_1.name]) + " times.")
+print(player_2.name + " won " + str(wins[player_2.name]) + " times.")
+#print(time.time() - t)
+input()
