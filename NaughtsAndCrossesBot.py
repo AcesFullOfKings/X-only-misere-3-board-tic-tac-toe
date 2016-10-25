@@ -41,12 +41,12 @@ class Board:
     def is_game_over(self):
         return self.is_win(0) and self.is_win(1) and self.is_win(2)
 
-    def kill_board(self, board):
-        b = self.boards[board]
+    def kill_board(self, board_num):
+        b = self.boards[board_num] #get board object
         for r in range(3):
             for c in range(3):
                 b[r][c] = "O"
-        self.boards[board] = b        
+        self.boards[board_num] = b        
 
     def move(self, piece, board, row, column):
         if row > 2 or column > 2 or board > 2 or row < 0 or column < 0 or board < 0:
@@ -87,7 +87,6 @@ class Bot(Player):
         self.name = name
 
     def make_move(self, board):
-
         def get_board_rating(b):
             if b[0][0] == "O": #if board is dead return 1
                 return ""
@@ -232,9 +231,7 @@ class Bot(Player):
 player_1 = Human()
 player_2 = Bot("The Computer")
 
-#wins = {player_1.name: 0, player_2.name: 0}
-#t = time.time()
-for i in range(43000):
+while True:
     #new game
     game_over = False
     turn_player = choice([player_1, player_2])
@@ -263,14 +260,9 @@ for i in range(43000):
             print(winner + " wins!")
             print("*"*(len(winner) + 6)+"\n\n")
             game_over = True
-            #wins[winner] += 1
             input("Press enter to start a new game.")
         else:
             if turn_player == player_2:
                 turn_player = player_1
             else:
                 turn_player = player_2
-print(player_1.name + " won " + str(wins[player_1.name]) + " times.")
-print(player_2.name + " won " + str(wins[player_2.name]) + " times.")
-#print(time.time() - t)
-input()
