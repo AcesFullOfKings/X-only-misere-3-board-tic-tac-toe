@@ -1,5 +1,13 @@
 # misere, X-only, 3-board naughts and crosses
 
+""" 
+Rules: 
+-both players play as X
+-can move on any square on any of the three boards
+-when a board has three X's in a row in any direction, that board is declared "dead" and is out of play
+-When a player makes three X's in a row on the final board, that player loses.
+"""
+
 from copy import deepcopy
 import time
 from random import choice
