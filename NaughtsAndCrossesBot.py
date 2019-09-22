@@ -8,9 +8,13 @@ Rules:
 -When a player makes three X's in a row on the final board, that player loses.
 """
 
-from copy import deepcopy
 import time
+from copy import deepcopy
 from random import choice
+from itertools import cycle
+
+num_boards = 3   # change to start with any number of boards
+#num_players = 2 # possible extension? who would win if players > 2?
 
 class SquareTakenException(Exception):
     def __init__(self):
@@ -18,20 +22,20 @@ class SquareTakenException(Exception):
 
 class Board:
     def __init__(self):
-        self.boards = [[["-" for c in range(3)] for r in range(3)] for b in range(3)] #board row column
+        self.boards = [[["-" for c in range(3)] for r in range(3)] for b in range(num_boards)] #board row column
 
     def show(self):
-        for i in range(1,4):
+        for i in range(1,num_boards+1):
             print("Board " + str(i) + " "*6, end="")
         print("\n")
         for row in range(3):
             count = 0
-            for board in range(3):
+            for board in range(num_boards):
                 print("|", end="")
                 for col in range(3):
                     print(self.boards[board][row][col], end="")
                     print("|", end="")
-                print("  ||  " if count < 2 else "", end="")
+                print("  ||  " if count < num_boards-1 else "", end="")
                 count += 1
             print("\n")
 
@@ -47,17 +51,17 @@ class Board:
                 ("-" != b[2][0] == b[1][1] == b[0][2]))   # TR-BL diagonal win
 
     def is_game_over(self):
-        return self.is_win(0) and self.is_win(1) and self.is_win(2)
+        return all(self.is_win(n) for n in range(num_boards))
 
     def kill_board(self, board_num):
-        b = self.boards[board_num] #get board object
+        b = self.boards[board_num] # get board object
         for r in range(3):
             for c in range(3):
                 b[r][c] = "O"
         self.boards[board_num] = b        
 
     def move(self, piece, board, row, column):
-        if row > 2 or column > 2 or board > 2 or row < 0 or column < 0 or board < 0:
+        if row > 2 or column > 2 or board > num_boards-1 or row < 0 or column < 0 or board < 0:
             raise IndexError
         if self.boards[board][row][column] != "-":
             raise SquareTakenException
@@ -84,7 +88,7 @@ class Human(Player):
                 print("")
                 return move
             except IndexError:
-                print("Value must be between 1 and 3!")
+                print("Value must be between 1 and " + str(num_boards) + "!")
             except ValueError:
                 print("Input must be an integer!")
             except SquareTakenException:
@@ -96,10 +100,10 @@ class Bot(Player):
 
     def make_move(self, board):
         def get_board_rating(b):
-            if b[0][0] == "O": #if board is dead return 1
+            if b[0][0] == "O": # if board is dead return 1
                 return ""
          
-            boards = { #only includes in-play positions (not boards with three-in-a-row)
+            boards = { # only includes in-play positions (not boards with three-in-a-row)
             "000000000" : "c",
             "100000000" : "",
             "010000000" : "",
@@ -182,7 +186,7 @@ class Bot(Player):
                         ("-" != bd[0][2] == bd[1][2] == bd[2][2]) or # right column win
                         ("-" != bd[0][0] == bd[1][1] == bd[2][2]) or # TL-BR diagonal win
                         ("-" != bd[2][0] == bd[1][1] == bd[0][2]))   # TR-BL diagonal win
-        
+            
             if is_win(b):
                 return ""            
 
@@ -205,16 +209,16 @@ class Bot(Player):
 
         def get_position_rating(boards):
             position_rating = ""
-            for i in range(3):
+            for i in range(num_boards):
                 position_rating += get_board_rating(boards[i])
         
-            temp = list(position_rating) #create list of chars
-            temp.sort() #sort list 
-            position_rating = "".join(temp) #merge list into string. String is now sorted alphabetically
+            temp = list(position_rating) # create list of chars
+            temp.sort() # sort list 
+            position_rating = "".join(temp) # merge list into string. String is now sorted alphabetically
             return position_rating
 
         avail_moves = []
-        for b in range(3):
+        for b in range(num_boards):
             for r in range(3):
                 for c in range(3):
                     if board.boards[b][r][c] == "-":
@@ -237,12 +241,18 @@ class Bot(Player):
             return choice(avail_moves)
         
 player_1 = Human()
-player_2 = Bot("The Computer")
+player_2 = Bot("The Bot")
+
+player_cycler = cycle([player_1, player_2])
 
 while True:
-    #new game
+    # new game
     game_over = False
-    turn_player = choice([player_1, player_2])
+    turn_player = next(player_cycler) # player 1 goes first... but:
+    
+    if choice([1,2]) == 2: # if rand number = 2
+    	turn_player = next(player_cycler) # skip player 1's go
+    	
     print("\n" + turn_player.name + " moves first - begin!\n\n")
     b = Board()
     b.show()
@@ -256,21 +266,18 @@ while True:
 
         if b.is_win(board):
             print("\nBoard " + str(board+1) + " is dead!\n")
-            b.kill_board(board) #only passes the board number as an integer, not the actual board
+            b.kill_board(board) # only passes the board number as an integer, not the actual board
             b.show()
         if b.is_game_over():
-            b.show()
             if turn_player == player_2:
                 winner = player_1.name
             else:
                 winner = player_2.name
+            
             print("*"*(len(winner) + 6))
             print(winner + " wins!")
             print("*"*(len(winner) + 6)+"\n\n")
             game_over = True
             input("Press enter to start a new game.")
         else:
-            if turn_player == player_2:
-                turn_player = player_1
-            else:
-                turn_player = player_2
+            turn_player = next(player_cycler)
